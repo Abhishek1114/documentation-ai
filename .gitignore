@@ -1,0 +1,7 @@
+.venv/
+data/synthetic/
+*.pdf
+*.png
+__pycache__/
+*.gguf
+*.safetensors

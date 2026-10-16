@@ -1,0 +1,9 @@
+layout,input,method,n,cer,table_acc
+A,digital,pdfplumber_lines,50,0.0,1.0
+A,scan,tesseract_psm6_autocontrast,50,0.4703,0.0
+B,digital,pdfplumber_text,50,0.0,0.0
+B,scan,tesseract_psm6_autocontrast,50,0.0652,0.3782
+C,digital,pdfplumber_lines,50,0.0,0.0
+C,scan,tesseract_psm6_autocontrast,50,0.106,0.0015
+D,digital,pdfplumber_lines,50,0.0,1.0
+D,scan,tesseract_psm6_autocontrast,50,0.1503,0.0

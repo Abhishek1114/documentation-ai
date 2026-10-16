@@ -1,0 +1,10 @@
+psm,preprocess,cer,table_acc,sec_per_doc
+4,none,0.1933,0.1516,2.38
+4,autocontrast,0.1933,0.1516,1.79
+4,threshold,0.189,0.1721,1.11
+6,none,0.1839,0.1051,2.19
+6,autocontrast,0.1839,0.1051,2.69
+6,threshold,0.1917,0.1211,1.42
+11,none,0.1545,0.1037,2.19
+11,autocontrast,0.1545,0.1037,1.72
+11,threshold,0.1478,0.1135,0.97
