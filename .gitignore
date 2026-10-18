@@ -1,7 +1,14 @@
 .venv/
 data/synthetic/
+data/parsed/
 *.pdf
 *.png
 __pycache__/
 *.gguf
 *.safetensors
+colab_bundle.zip
+colab_bundle/
+results_download/
+scratch/
+runs/
+.pytest_cache/

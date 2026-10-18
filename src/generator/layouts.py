@@ -8,6 +8,23 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 BOLD = {"Helvetica": "Helvetica-Bold", "Times-Roman": "Times-Bold", "Courier": "Courier-Bold"}
 
 
+def _lim(v, null_marker):
+    """Print a limit. A null limit is drawn with a layout-specific marker, never the string 'None'."""
+    return null_marker if v is None else str(v)
+
+
+def _limit_phrase(m):
+    """Layout C prints limits as prose, so the model must turn words back into limit_min / limit_max."""
+    lo, hi = m["limit_min"], m["limit_max"]
+    if lo is None and hi is None:
+        return "no limit"
+    if lo is None:
+        return f"limit up to {hi}"
+    if hi is None:
+        return f"limit at least {lo}"
+    return f"limit {lo} to {hi}"
+
+
 class _Page:
     """Collects the PDF story AND the ground-truth text in the same order."""
     def __init__(self, font):
@@ -36,6 +53,7 @@ class _Page:
 def _dev(rec):
     return "; ".join(rec["deviations"]) or "None"
 
+# ---------- Layout A (train): ruled grids; null limit printed as "-" ----------
 def render_a(rec: dict, out_pdf: str) -> dict:
     styles = getSampleStyleSheet()
     story, gt_lines = [], []
@@ -54,7 +72,7 @@ def render_a(rec: dict, out_pdf: str) -> dict:
     step_grid = [["No", "Description", "Result", "Initials"]] + \
         [[str(s["no"]), s["description"], s["result"], s["initials"]] for s in rec["steps"]]
     meas_grid = [["Parameter", "Value", "Unit", "Min", "Max"]] + \
-        [[m["parameter"], str(m["value"]), m["unit"], str(m["limit_min"]), str(m["limit_max"])]
+        [[m["parameter"], str(m["value"]), m["unit"], _lim(m["limit_min"], "-"), _lim(m["limit_max"], "-")]
          for m in rec["measurements"]]
 
     ts = TableStyle([("GRID", (0, 0), (-1, -1), 0.5, colors.black),
@@ -70,6 +88,7 @@ def render_a(rec: dict, out_pdf: str) -> dict:
     return {"gt_lines": gt_lines, "gt_tables": {"steps": step_grid, "measurements": meas_grid}}
 
 
+# ---------- Layout B (train): no grid, columns reordered; null limit printed as "n.a." ----------
 def render_b(rec, out_pdf):
     f, e = "Times-Roman", rec["equipment"]
     pg = _Page(f)
@@ -82,7 +101,7 @@ def render_b(rec, out_pdf):
     steps = [["No", "Result", "Description", "Initials"]] + \
         [[str(s["no"]), s["result"], s["description"], s["initials"]] for s in rec["steps"]]
     meas = [["Parameter", "Unit", "Value", "Min", "Max"]] + \
-        [[m["parameter"], m["unit"], str(m["value"]), str(m["limit_min"]), str(m["limit_max"])]
+        [[m["parameter"], m["unit"], str(m["value"]), _lim(m["limit_min"], "n.a."), _lim(m["limit_max"], "n.a.")]
          for m in rec["measurements"]]
     cmds = [("LINEBELOW", (0, 0), (-1, 0), 1, colors.black), ("ALIGN", (0, 0), (-1, -1), "LEFT")]
     pg.table(steps, cmds, f); pg.space()
@@ -107,7 +126,7 @@ def render_c(rec, out_pdf):
     cmds = [("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.lightgrey]),
             ("BACKGROUND", (0, 0), (-1, 0), colors.grey)]
     pg.table(steps, cmds, f); pg.space()
-    parts = [f"{m['parameter']} was {m['value']} {m['unit']} (limit {m['limit_min']} to {m['limit_max']})"
+    parts = [f"{m['parameter']} was {m['value']} {m['unit']} ({_limit_phrase(m)})"
              for m in rec["measurements"]]
     pg.para("Rinse test results: " + "; ".join(parts) + ".")
     pg.para(f"Deviations: {_dev(rec)}")
@@ -116,7 +135,7 @@ def render_c(rec, out_pdf):
     return {"gt_lines": pg.lines, "gt_tables": {"steps": steps}}      # no measurement table drawn -> omit key
 
 
-# ---------- Layout D (test): 2-column header, steps as text lines, merged-header table ----------
+# ---------- Layout D (test): 2-column header, steps as text lines, merged-header table; null limit "N/A" ----------
 def render_d(rec, out_pdf):
     f, e = "Helvetica", rec["equipment"]
     pg = _Page(f)
@@ -130,7 +149,7 @@ def render_d(rec, out_pdf):
         pg.para(f"Step {s['no']}: {s['description']} - {s['result'].upper()} ({s['initials']})")
     pg.space()
     meas = [["Measured parameters", "", "", "", ""], ["Parameter", "Value", "Unit", "Min", "Max"]] + \
-        [[m["parameter"], str(m["value"]), m["unit"], str(m["limit_min"]), str(m["limit_max"])]
+        [[m["parameter"], str(m["value"]), m["unit"], _lim(m["limit_min"], "N/A"), _lim(m["limit_max"], "N/A")]
          for m in rec["measurements"]]
     cmds = [("SPAN", (0, 0), (-1, 0)), ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
             ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey), ("ALIGN", (0, 0), (-1, 0), "CENTER")]

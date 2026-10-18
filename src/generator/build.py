@@ -1,4 +1,4 @@
-import argparse, csv, json, random
+import argparse, csv, datetime as dt, json, random, shutil
 from pathlib import Path
 
 from src.generator import layouts
@@ -7,6 +7,7 @@ from src.generator.scan import pdf_to_scan
 from src.schema.models import GMPRecord
 
 ROOT = Path("data/synthetic")
+DERIVED = [Path("data/parsed"), Path("data/pairs")]            # built FROM the synthetic set; stale after a rebuild
 SPLIT = {"A": "train", "B": "train", "C": "val", "D": "test"}   # split by LAYOUT, never random
 LAYOUT_FNS = {k: getattr(layouts, f"render_{k.lower()}", None) for k in SPLIT}
 
@@ -17,7 +18,18 @@ def main():
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--layouts", default="ABCD")
     ap.add_argument("--severity", type=float, default=1.0)
+    ap.add_argument("--clean", action="store_true",
+                    help="delete data/synthetic, data/parsed and data/pairs first (use when regenerating)")
     args = ap.parse_args()
+
+    if args.clean:
+        for d in [ROOT, *DERIVED]:
+            if d.exists():
+                shutil.rmtree(d)
+                print(f"[clean] removed {d}")
+    elif (ROOT / "gt").exists() and any((ROOT / "gt").iterdir()):
+        print("[warn] data/synthetic already has files. Re-run with --clean if the dataset changed, "
+              "otherwise stale parsed/pair files may not match the new data.")
 
     for sub in ("pdf", "scan", "gt"):
         (ROOT / sub).mkdir(parents=True, exist_ok=True)
@@ -52,7 +64,14 @@ def main():
     with open(ROOT / "manifest.csv", "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=["id", "layout", "split", "pdf_path", "scan_path"])
         w.writeheader(); w.writerows(rows)
-    print(f"wrote {len(rows)} documents -> {ROOT / 'manifest.csv'}")
+
+    # Dataset fingerprint. The parse cache stores this tag and refuses to reuse entries made for a different dataset.
+    tag = f"seed{args.seed}_n{args.per_layout}_sev{args.severity}_{args.layouts}"
+    (ROOT / "dataset_meta.json").write_text(json.dumps({
+        "tag": tag, "seed": args.seed, "per_layout": args.per_layout, "severity": args.severity,
+        "layouts": args.layouts, "n_docs": len(rows),
+        "created": dt.datetime.now().isoformat(timespec="seconds")}, indent=2), encoding="utf-8")
+    print(f"wrote {len(rows)} documents -> {ROOT / 'manifest.csv'}  (dataset tag: {tag})")
 
 
 if __name__ == "__main__":

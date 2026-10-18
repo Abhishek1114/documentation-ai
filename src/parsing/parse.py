@@ -1,9 +1,12 @@
+import numpy as np
 import pymupdf as fitz
 import pdfplumber, pytesseract
 from statistics import mean, median
 from PIL import Image, ImageOps
 
 # pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"  # if needed
+
+PARSER_VERSION = {"digital": "v1", "scan": "v3-tess-nolines"}
 
 
 def is_scanned(pdf_path: str, min_chars: int = 30) -> bool:
@@ -22,7 +25,51 @@ def parse_digital(pdf_path: str) -> dict:
 
 
 # ---------------- scanned path ----------------
-def _preprocess(img, mode):
+def _remove_ruling(img, k):
+    """Opening with 1xk and kx1 kernels via prefix sums: any dark run >= k px is treated as a ruling
+    line and whitened."""
+    gray = ImageOps.autocontrast(img.convert("L"))
+    arr = np.array(gray)
+    dark = arr < 128
+    H, W = dark.shape
+
+    # Horizontal runs >= k
+    cs_h = np.pad(np.cumsum(dark, axis=1, dtype=np.int32), ((0, 0), (1, 0)))
+    eroded_h = (cs_h[:, k:] - cs_h[:, :-k]) == k
+    diff_h = np.zeros((H, W + 1), dtype=np.int32)
+    diff_h[:, : W - k + 1] += eroded_h
+    diff_h[:, k:] -= eroded_h
+    h_lines = np.cumsum(diff_h, axis=1)[:, :W] > 0
+
+    # Vertical runs >= k
+    cs_v = np.pad(np.cumsum(dark, axis=0, dtype=np.int32), ((1, 0), (0, 0)))
+    eroded_v = (cs_v[k:, :] - cs_v[:-k, :]) == k
+    diff_v = np.zeros((H + 1, W), dtype=np.int32)
+    diff_v[: H - k + 1, :] += eroded_v
+    diff_v[k:, :] -= eroded_v
+    v_lines = np.cumsum(diff_v, axis=0)[:H, :] > 0
+
+    lines = h_lines | v_lines
+
+    # Dilate by 1 px (8-connected)
+    dilated = lines.copy()
+    dilated[1:, :] |= lines[:-1, :]
+    dilated[:-1, :] |= lines[1:, :]
+    dilated[:, 1:] |= lines[:, :-1]
+    dilated[:, :-1] |= lines[:, 1:]
+    dilated[1:, 1:] |= lines[:-1, :-1]
+    dilated[1:, :-1] |= lines[:-1, 1:]
+    dilated[:-1, 1:] |= lines[1:, :-1]
+    dilated[:-1, :-1] |= lines[1:, 1:]
+
+    cleaned = arr.copy()
+    cleaned[dilated] = 255
+    return Image.fromarray(cleaned)
+
+
+def _preprocess(img, mode, dpi=300):
+    if mode == "nolines":
+        return _remove_ruling(img, k=round(0.2 * dpi))
     img = img.convert("L")
     if mode == "none":
         return img
@@ -34,8 +81,21 @@ def _preprocess(img, mode):
 
 def _words(img, psm):
     d = pytesseract.image_to_data(img, config=f"--psm {psm}", output_type=pytesseract.Output.DICT)
-    return [{"t": t.strip(), "l": d["left"][i], "top": d["top"][i], "w": d["width"][i], "h": d["height"][i]}
+    return [{"t": t.strip(), "l": d["left"][i], "top": d["top"][i], "w": d["width"][i], "h": d["height"][i],
+             "line": (d["block_num"][i], d["par_num"][i], d["line_num"][i])}
             for i, t in enumerate(d["text"]) if t.strip()]
+
+
+def _group_lines(words):
+    """Group words by Tesseract's own line ids; left-to-right inside a line, top-to-bottom across lines."""
+    if not words:
+        return [], 0
+    lines = {}
+    for w in words:
+        lines.setdefault(w["line"], []).append(w)
+    rows = [sorted(ws, key=lambda w: w["l"]) for ws in lines.values()]
+    rows.sort(key=lambda r: mean(w["top"] + w["h"] / 2 for w in r))
+    return rows, median(w["h"] for w in words)
 
 
 def _group_rows(words):
@@ -90,13 +150,14 @@ def _tables_from_rows(rows, gap):
     return tables
 
 
-def parse_scanned(pdf_path: str, dpi=300, psm=6, preprocess="autocontrast",
-                  gap_factor=0.8, with_tables=True) -> dict:
+def parse_scanned(pdf_path: str, dpi=300, psm=6, preprocess="nolines",
+                  gap_factor=0.8, with_tables=True, grouping="tess") -> dict:
     page = fitz.open(pdf_path)[0]
     pix = page.get_pixmap(dpi=dpi)
     img = Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
-    img = _preprocess(img, preprocess)
-    rows, med_h = _group_rows(_words(img, psm))
+    img = _preprocess(img, preprocess, dpi=dpi)
+    words = _words(img, psm)
+    rows, med_h = _group_lines(words) if grouping == "tess" else _group_rows(words)
     text = "\n".join(" ".join(w["t"] for w in r) for r in rows)
     tables = _tables_from_rows(rows, gap_factor * med_h) if (rows and with_tables) else []
     return {"text": text, "tables": tables, "method": f"tesseract_psm{psm}_{preprocess}"}
