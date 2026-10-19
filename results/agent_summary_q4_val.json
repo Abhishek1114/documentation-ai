@@ -1,0 +1,22 @@
+{
+  "digital": {
+    "n": 30,
+    "ok_first_try": 1.0,
+    "ok_final": 1.0,
+    "mean_repairs": 0.0,
+    "median_secs": 11.1,
+    "kind_detected_wrong": 0,
+    "rescued_by": {},
+    "final_failure_kinds": {}
+  },
+  "scan": {
+    "n": 30,
+    "ok_first_try": 1.0,
+    "ok_final": 1.0,
+    "mean_repairs": 0.0,
+    "median_secs": 12.8,
+    "kind_detected_wrong": 0,
+    "rescued_by": {},
+    "final_failure_kinds": {}
+  }
+}

@@ -1,13 +1,20 @@
 """Phase 3: QLoRA fine-tuning of Qwen2.5-1.5B-Instruct on the extraction pairs.
 
-Run on a Colab T4 (needs CUDA). Example:
+Run on a Colab T4 (needs CUDA) from the repo root:
     python -m src.training.train_qlora --run-name r16_lr2e-4 --out-dir runs
 
-Writes <out-dir>/<run-name>/adapter/   (LoRA weights + tokenizer)
-       <out-dir>/<run-name>/metrics.json (config, loss history, time, peak VRAM, adapter size)
+Writes <out-dir>/<run-name>/adapter/    LoRA weights + tokenizer
+       <out-dir>/<run-name>/metrics.json config, loss history, time, peak VRAM, adapter size
+
+Compatible with transformers 4.x and 5.x (the baseline Colab ran transformers 5.18):
+  - warmup is passed as an integer number of steps (warmup_ratio was removed in v5)
+  - evaluation_strategy / eval_strategy is picked by inspecting TrainingArguments
+  - torch_dtype / dtype is tried both ways when loading the model
 """
 import argparse
+import inspect
 import json
+import math
 import os
 import random
 import time
@@ -75,6 +82,15 @@ def dir_size_mb(path):
     return total / 1e6
 
 
+def load_4bit_model(bnb):
+    """Load the base model in 4-bit. transformers renamed torch_dtype -> dtype, so try both."""
+    kwargs = dict(quantization_config=bnb, device_map={"": 0})
+    try:
+        return AutoModelForCausalLM.from_pretrained(MODEL, dtype=torch.float16, **kwargs)
+    except TypeError:
+        return AutoModelForCausalLM.from_pretrained(MODEL, torch_dtype=torch.float16, **kwargs)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--run-name", required=True)
@@ -89,6 +105,7 @@ def main():
     ap.add_argument("--epochs", type=float, default=3)
     ap.add_argument("--batch", type=int, default=2)
     ap.add_argument("--accum", type=int, default=8)
+    ap.add_argument("--warmup-frac", type=float, default=0.05)
     ap.add_argument("--eval-n", type=int, default=300, help="val docs used for eval loss")
     ap.add_argument("--eval-steps", type=int, default=25)
     ap.add_argument("--grad-ckpt", action="store_true", help="enable if you hit out-of-memory")
@@ -111,6 +128,12 @@ def main():
     val_rows = tokenize_split(val_pairs, tok, args.max_len)
     print(f"train={len(train_rows)} val(eval subset)={len(val_rows)}")
 
+    # Integer warmup steps (works on transformers 4.x and 5.x).
+    steps_per_epoch = math.ceil(len(train_rows) / (args.batch * args.accum))
+    total_steps = math.ceil(steps_per_epoch * args.epochs)
+    warmup_steps = max(1, int(args.warmup_frac * total_steps))
+    print(f"steps/epoch={steps_per_epoch} total_steps={total_steps} warmup_steps={warmup_steps}")
+
     # ---- 4-bit base model -------------------------------------------------------------
     bnb = BitsAndBytesConfig(
         load_in_4bit=True,
@@ -118,9 +141,7 @@ def main():
         bnb_4bit_use_double_quant=True,
         bnb_4bit_compute_dtype=torch.float16,  # T4 has no bf16
     )
-    model = AutoModelForCausalLM.from_pretrained(
-        MODEL, quantization_config=bnb, device_map={"": 0}
-    )
+    model = load_4bit_model(bnb)
     model.config.use_cache = False  # KV cache is for generation; useless (and conflicting) in training
     model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=args.grad_ckpt)
 
@@ -139,7 +160,7 @@ def main():
     print(f"trainable params: {trainable:,} of {total:,} ({100 * trainable / total:.2f}%)")
 
     # ---- training ---------------------------------------------------------------------
-    targs = TrainingArguments(
+    ta_kwargs = dict(
         output_dir=os.path.join(run_dir, "trainer_tmp"),
         per_device_train_batch_size=args.batch,
         per_device_eval_batch_size=args.batch * 2,
@@ -147,21 +168,26 @@ def main():
         learning_rate=args.lr,
         num_train_epochs=args.epochs,
         lr_scheduler_type="cosine",
-        warmup_ratio=0.05,
+        warmup_steps=warmup_steps,
         weight_decay=0.0,
         max_grad_norm=1.0,
         fp16=True,
         optim="paged_adamw_8bit",
         logging_steps=5,
-        eval_strategy="steps",  # older transformers call this evaluation_strategy
         eval_steps=args.eval_steps,
         save_strategy="no",  # we save the adapter ourselves at the end
         report_to="none",
         remove_unused_columns=False,
         gradient_checkpointing=args.grad_ckpt,
-        gradient_checkpointing_kwargs={"use_reentrant": False} if args.grad_ckpt else None,
         seed=args.seed,
     )
+    if args.grad_ckpt:
+        ta_kwargs["gradient_checkpointing_kwargs"] = {"use_reentrant": False}
+    # evaluation_strategy (transformers <= 4.45) was renamed eval_strategy
+    params = inspect.signature(TrainingArguments.__init__).parameters
+    ta_kwargs["eval_strategy" if "eval_strategy" in params else "evaluation_strategy"] = "steps"
+    targs = TrainingArguments(**ta_kwargs)
+
     trainer = Trainer(
         model=model,
         args=targs,
@@ -183,6 +209,9 @@ def main():
 
     metrics = {
         "args": vars(args),
+        "steps_per_epoch": steps_per_epoch,
+        "total_steps": total_steps,
+        "warmup_steps": warmup_steps,
         "trainable_params": trainable,
         "total_params": total,
         "train_seconds": round(train_seconds, 1),

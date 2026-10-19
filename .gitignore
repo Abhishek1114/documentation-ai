@@ -7,6 +7,8 @@ __pycache__/
 *.gguf
 *.safetensors
 colab_bundle.zip
+models/
+results/traces/
 colab_bundle/
 results_download/
 scratch/

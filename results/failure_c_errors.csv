@@ -1,0 +1,108 @@
+id,kind,status,field,path,error,bucket,gold,pred
+C_00655,digital,salvaged,steps.len,steps.len,wrong_value,count,4,5
+C_00655,digital,salvaged,steps.no,steps[5].no,extra_item,number,,5
+C_00655,digital,salvaged,steps.description,steps[5].description,extra_item,text,,Rinse test
+C_00655,digital,salvaged,steps.result,steps[5].result,extra_item,enum,,TOC was 495.75 ppb
+C_00655,digital,salvaged,steps.initials,steps[5].initials,extra_item,text,,KS
+C_00631,digital,valid,measurements.limit_min,measurements[ph of final rinse].limit_min,null_to_value,null,,5.0
+C_00613,digital,valid,reviewed_by,reviewed_by,null_to_value,null,,-
+C_00643,digital,valid,measurements.limit_min,measurements[toc].limit_min,null_to_value,null,,0.0
+C_00652,digital,valid,reviewed_by,reviewed_by,null_to_value,null,,-
+C_00625,digital,valid,measurements.limit_min,measurements[ph of final rinse].limit_min,null_to_value,null,,5.0
+C_00649,digital,valid,measurements.limit_min,measurements[toc].limit_min,null_to_value,null,,0.0
+C_00647,digital,valid,steps.len,steps.len,wrong_value,count,4,5
+C_00647,digital,valid,steps.no,steps[5].no,extra_item,number,,5
+C_00647,digital,valid,steps.description,steps[5].description,extra_item,text,,Rinse
+C_00647,digital,valid,steps.result,steps[5].result,extra_item,enum,,n/a
+C_00647,digital,valid,steps.initials,steps[5].initials,extra_item,text,,NJ
+C_00629,digital,valid,measurements.limit_min,measurements[ph of final rinse].limit_min,null_to_value,null,,5.0
+C_00606,digital,valid,steps.len,steps.len,wrong_value,count,4,5
+C_00606,digital,valid,steps.no,steps[5].no,extra_item,number,,5
+C_00606,digital,valid,steps.description,steps[5].description,extra_item,text,,Rinse test results
+C_00606,digital,valid,steps.result,steps[5].result,extra_item,enum,,n/a
+C_00606,digital,valid,steps.initials,steps[5].initials,extra_item,text,,NJ
+C_00603,digital,salvaged,steps.len,steps.len,wrong_value,count,4,7
+C_00603,digital,salvaged,steps.no,steps[5].no,extra_item,number,,5
+C_00603,digital,salvaged,steps.description,steps[5].description,extra_item,text,,Rinse test
+C_00603,digital,salvaged,steps.result,steps[5].result,extra_item,enum,,pH of final rinse was 6.51
+C_00603,digital,salvaged,steps.initials,steps[5].initials,extra_item,text,,KS
+C_00603,digital,salvaged,steps.no,steps[6].no,extra_item,number,,6
+C_00603,digital,salvaged,steps.description,steps[6].description,extra_item,text,,TOC
+C_00603,digital,salvaged,steps.result,steps[6].result,extra_item,enum,,52.68 ppb
+C_00603,digital,salvaged,steps.initials,steps[6].initials,extra_item,text,,AP
+C_00603,digital,salvaged,steps.no,steps[7].no,extra_item,number,,7
+C_00603,digital,salvaged,steps.description,steps[7].description,extra_item,text,,Conductivity
+C_00603,digital,salvaged,steps.result,steps[7].result,extra_item,enum,,1.14 uS/cm
+C_00603,digital,salvaged,steps.initials,steps[7].initials,extra_item,text,,RM
+C_00694,digital,valid,measurements.limit_min,measurements[conductivity].limit_min,null_to_value,null,,0.0
+C_00689,digital,valid,measurements.limit_min,measurements[toc].limit_min,null_to_value,null,,0.0
+C_00615,digital,valid,measurements.limit_min,measurements[ph of final rinse].limit_min,null_to_value,null,,5.0
+C_00663,digital,valid,measurements.limit_min,measurements[ph of final rinse].limit_min,null_to_value,null,,5.0
+C_00660,digital,valid,steps.len,steps.len,wrong_value,count,4,5
+C_00660,digital,valid,steps.no,steps[5].no,extra_item,number,,5
+C_00660,digital,valid,steps.description,steps[5].description,extra_item,text,,Rinse test
+C_00660,digital,valid,steps.result,steps[5].result,extra_item,enum,,n/a
+C_00660,digital,valid,steps.initials,steps[5].initials,extra_item,text,,SD
+C_00685,digital,valid,measurements.limit_min,measurements[ph of final rinse].limit_min,null_to_value,null,,5.0
+C_00634,digital,valid,measurements.limit_min,measurements[ph of final rinse].limit_min,null_to_value,null,,5.0
+C_00653,digital,valid,measurements.limit_min,measurements[toc].limit_min,null_to_value,null,,0.0
+C_00648,digital,valid,measurements.limit_min,measurements[ph of final rinse].limit_min,null_to_value,null,,5.0
+C_00609,digital,valid,measurements.limit_min,measurements[ph of final rinse].limit_min,null_to_value,null,,5.0
+C_00616,digital,valid,measurements.limit_min,measurements[toc].limit_min,null_to_value,null,,0.0
+C_00616,digital,valid,measurements.limit_min,measurements[ph of final rinse].limit_min,null_to_value,null,,5.0
+C_00655,scan,salvaged,steps.len,steps.len,wrong_value,count,4,5
+C_00655,scan,salvaged,steps.no,steps[5].no,extra_item,number,,5
+C_00655,scan,salvaged,steps.description,steps[5].description,extra_item,text,,Rinse test
+C_00655,scan,salvaged,steps.result,steps[5].result,extra_item,enum,,TOC was 495.75 ppb
+C_00655,scan,salvaged,steps.initials,steps[5].initials,extra_item,text,,NJ
+C_00601,scan,valid,measurements.limit_min,measurements[toc].limit_min,null_to_value,null,,0.0
+C_00644,scan,valid,measurements.limit_max,measurements[toc].limit_max,wrong_value,number,500.0,50.0
+C_00610,scan,valid,steps.description,steps[1].description,wrong_value,text,Wipe with 70% IPA,Wipe with 703 IPA
+C_00610,scan,valid,measurements.limit_max,measurements[conductivity].limit_max,value_to_null,number,1.3,
+C_00639,scan,valid,document_id,document_id,wrong_value,text,CR-2026-00639,CR-2 026-00639
+C_00664,scan,valid,measurements.limit_max,measurements[ph of final rinse].limit_max,null_to_value,null,,7.5
+C_00623,scan,valid,measurements.limit_max,measurements[conductivity].limit_max,value_to_null,number,1.3,
+C_00643,scan,valid,measurements.limit_min,measurements[toc].limit_min,null_to_value,null,,0.0
+C_00635,scan,valid,measurements.limit_max,measurements[conductivity].limit_max,null_to_value,null,,1.3
+C_00625,scan,valid,measurements.limit_min,measurements[ph of final rinse].limit_min,null_to_value,null,,5.0
+C_00649,scan,valid,measurements.limit_min,measurements[toc].limit_min,null_to_value,null,,0.0
+C_00652,scan,valid,measurements.limit_max,measurements[ph of final rinse].limit_max,value_to_null,number,7.5,
+C_00647,scan,valid,steps.len,steps.len,wrong_value,count,4,5
+C_00647,scan,valid,measurements.limit_max,measurements[conductivity].limit_max,value_to_null,number,1.3,
+C_00647,scan,valid,steps.no,steps[5].no,extra_item,number,,5
+C_00647,scan,valid,steps.description,steps[5].description,extra_item,text,,Rinse
+C_00647,scan,valid,steps.result,steps[5].result,extra_item,enum,,n/a
+C_00647,scan,valid,steps.initials,steps[5].initials,extra_item,text,,NJ
+C_00629,scan,valid,measurements.limit_min,measurements[ph of final rinse].limit_min,null_to_value,null,,5.0
+C_00629,scan,valid,measurements.limit_max,measurements[conductivity].limit_max,null_to_value,null,,1.3
+C_00603,scan,valid,steps.len,steps.len,wrong_value,count,4,5
+C_00603,scan,valid,measurements.limit_min,measurements[toc].limit_min,null_to_value,null,,0.0
+C_00603,scan,valid,steps.no,steps[5].no,extra_item,number,,5
+C_00603,scan,valid,steps.description,steps[5].description,extra_item,text,,Rinse test
+C_00603,scan,valid,steps.result,steps[5].result,extra_item,enum,,n/a
+C_00603,scan,valid,steps.initials,steps[5].initials,extra_item,text,,KS
+C_00689,scan,valid,measurements.limit_min,measurements[toc].limit_min,null_to_value,null,,0.0
+C_00606,scan,valid,measurements.limit_min,measurements[ph of final rinse].limit_min,value_to_null,number,5.0,
+C_00615,scan,valid,measurements.limit_min,measurements[ph of final rinse].limit_min,null_to_value,null,,5.0
+C_00663,scan,valid,measurements.limit_min,measurements[ph of final rinse].limit_min,null_to_value,null,,5.0
+C_00608,scan,valid,measurements.limit_max,measurements[ph of final rinse].limit_max,value_to_null,number,7.5,
+C_00651,scan,valid,measurements.limit_max,measurements[ph of final rinse].limit_max,value_to_null,number,7.5,
+C_00651,scan,valid,measurements.limit_max,measurements[conductivity].limit_max,value_to_null,number,1.3,
+C_00690,scan,valid,measurements.limit_max,measurements[conductivity].limit_max,value_to_null,number,1.3,
+C_00660,scan,valid,measurements.limit_max,measurements[ph of final rinse].limit_max,value_to_null,number,7.5,
+C_00645,scan,valid,measurements.limit_max,measurements[conductivity].limit_max,value_to_null,number,1.3,
+C_00685,scan,valid,measurements.limit_min,measurements[ph of final rinse].limit_min,null_to_value,null,,5.0
+C_00634,scan,valid,equipment.location,equipment.location,wrong_value,text,Room C-03,Room 03
+C_00634,scan,valid,measurements.limit_min,measurements[ph of final rinse].limit_min,null_to_value,null,,5.0
+C_00634,scan,valid,measurements.limit_max,measurements[conductivity].limit_max,value_to_null,number,1.3,
+C_00662,scan,valid,document_id,document_id,wrong_value,text,CR-2026-00662,cCR-2 026-00662
+C_00648,scan,valid,measurements.limit_min,measurements[ph of final rinse].limit_min,null_to_value,null,,5.0
+C_00648,scan,valid,measurements.limit_max,measurements[toc].limit_max,null_to_value,null,,500.0
+C_00653,scan,valid,steps.description,steps[1].description,wrong_value,text,Wipe with 70% IPA,Wipe with 703 IPA
+C_00653,scan,valid,measurements.limit_min,measurements[toc].limit_min,null_to_value,null,,0.0
+C_00653,scan,valid,measurements.limit_max,measurements[ph of final rinse].limit_max,value_to_null,number,7.5,
+C_00653,scan,valid,measurements.limit_max,measurements[conductivity].limit_max,value_to_null,number,1.3,
+C_00609,scan,valid,steps.description,steps[3].description,wrong_value,text,Wipe with 70% IPA,Wipe with 703 IPA
+C_00609,scan,valid,measurements.limit_min,measurements[ph of final rinse].limit_min,null_to_value,null,,5.0
+C_00616,scan,valid,measurements.limit_min,measurements[toc].limit_min,null_to_value,null,,0.0
+C_00616,scan,valid,measurements.limit_min,measurements[ph of final rinse].limit_min,null_to_value,null,,5.0
