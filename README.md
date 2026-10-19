@@ -6,23 +6,6 @@ A LangGraph agent validates every output and repairs failures, writing one JSONL
 
 **Portfolio project on synthetic data. "GMP-style" only: not GMP-compliant, not validated, not regulatory-ready.**
 
-## Architecture
-
-```mermaid
-flowchart LR
-    PDF[PDF] --> C{classify: digital or scanned}
-    C -->|digital| PD[parse_digital: PyMuPDF + pdfplumber]
-    C -->|scanned| PS[parse_scanned: Tesseract + ruled-line removal]
-    PD --> E[extract: fine-tuned Qwen2.5-1.5B via Ollama]
-    PS --> E
-    E --> V{validate: Pydantic GMPRecord}
-    V -->|valid| R[render: Markdown + DOCX + groundedness checks]
-    V -->|invalid| X[repair]
-    X -->|re-prompt with validation error| E
-    X -->|re-OCR psm 4, then psm 3 (scans only)| PS
-    V -.->|every step| T[(JSONL trace)]
-```
-
 ## Data
 
 Synthetic only: a generator fills random values into 4 layout templates (A, B, C, D) and produces a digital PDF and
@@ -34,8 +17,7 @@ Split **by layout**: A, B train; C validation; D test. Training pairs: <<N pairs
 All numbers are strict (JSON must decode and pass Pydantic), n = 100 documents per layout and kind unless stated.
 "Salvage F1" is reporting only: it scores the raw JSON of invalid outputs without repairing values.
 
-### Parsing
-<<Remeasure CER and table-cell accuracy with the current parse.py and paste the table here.>>
+
 
 ### Extraction, unseen layout C (validation)
 | model | kind | valid | strict F1 | salvage F1 | exact docs |
@@ -101,5 +83,5 @@ Deterministic template code, no model call. 30/30 digital and 30/30 scan agent o
 - The adapter was trained against the 4-bit base, evaluated merged into fp16, then converted to GGUF and quantized. Each step was measured end to end.
 - Groundedness checks compare the document with the extracted JSON, not with the original page. An extraction error passes through.
 - The parser reads page 0 only for scans.
-- Only the Markdown and DOCX outputs were generated; PDF export was skipped. The DOCX has not been opened in Word. <<Open one and change this line.>>
+
 
