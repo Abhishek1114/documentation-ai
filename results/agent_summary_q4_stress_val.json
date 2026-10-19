@@ -1,0 +1,15 @@
+{
+  "scan": {
+    "n": 30,
+    "ok_first_try": 0.9,
+    "ok_final": 1.0,
+    "mean_repairs": 0.167,
+    "median_secs": 13.4,
+    "kind_detected_wrong": 0,
+    "rescued_by": {
+      "reocr_psm4": 2,
+      "reprompt": 1
+    },
+    "final_failure_kinds": {}
+  }
+}
