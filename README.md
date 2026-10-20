@@ -18,6 +18,37 @@ All numbers are strict (JSON must decode and pass Pydantic), n = 100 documents p
 "Salvage F1" is reporting only: it scores the raw JSON of invalid outputs without repairing values.
 
 
+## Quickstart: Run on a PDF
+
+### 1. Prerequisites
+- Python 3.10+ and dependencies installed (`pip install -r ...`)
+- [Tesseract OCR](https://github.com/tesseract-ocr/tesseract) installed and available in `PATH` (used for scanned PDFs)
+- [Ollama](https://ollama.ai/) installed and running locally
+- Import the quantized GGUF model into Ollama:
+  ```bash
+  cd models
+  ollama create gmp-q4 -f Modelfile.q4
+  ```
+
+### 2. Run the Pipeline on a PDF
+Run the full parsing, extraction, validation, and repair agent on any digital or scanned PDF:
+
+```bash
+python -m src.agent.run --pdf path/to/document.pdf --model gmp-q4
+```
+
+#### CLI Options
+| Option | Default | Description |
+|---|---|---|
+| `--pdf` | *(required)* | Path to the PDF file (digital or scanned) |
+| `--model` | `gmp-q4` | Ollama model name |
+| `--max-retries` | `2` | Maximum retry/repair attempts if validation fails |
+| `--ocr-psm` | `None` | Optional Tesseract Page Segmentation Mode (e.g., `4` or `3`) |
+| `--out-dir` | `results/traces/demo` | Directory where JSONL audit traces are written |
+
+### 3. Output
+- **Console**: Displays document classification (`digital` vs `scanned`), repair attempts, error details, and the final extracted JSON.
+- **Audit Trace**: Saves a structured JSONL file to `results/traces/demo/<folder>_<doc_id>.jsonl` with prompt tokens, completion tokens, latency, and full conversation history.
 
 ### Extraction, unseen layout C (validation)
 | model | kind | valid | strict F1 | salvage F1 | exact docs |
